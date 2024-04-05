@@ -93,4 +93,35 @@ router.put('/add-crate/:batallionId' , authMiddleware ,async(req,res)=>{
 router.get('/get-data',authMiddleware , async(req,res)=>{
     return res.status(200).json({success: success , user: req.user})
 })
+// Api to login 
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find user by email
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Check if password is correct
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatch) {
+            return res.status(401).json({ success: false, message: 'Invalid password' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user._id, name: user.name, role: user.role },
+            jwtSec
+        );
+
+        // Send success response with token
+        res.status(200).json({ success: true, message: 'Login successful', token });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
 module.exports = router
