@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   role: {
     type: String,
-    enum: ['admin', 'user'], 
     required: true
   },
   name: {
@@ -14,10 +13,18 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Crate'
   }],
-  battalion: {
+  password: {
+    type: String,
+    required: true
+  },
+  batallions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Battalion',
-    required: true
+   
+  }],
+  email:{
+    type: String,
+    required:true
   }
 });
 

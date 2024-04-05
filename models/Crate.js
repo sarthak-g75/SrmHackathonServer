@@ -19,11 +19,15 @@ const crateSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['active', 'inactive'],
-    default: 'active'
+    default: 'inactive'
   },
   reinforcement: {
     type: Boolean,
     default: false
+  },
+  name:{
+    type: String,
+    required : true
   },
   type: {
     type: String,
