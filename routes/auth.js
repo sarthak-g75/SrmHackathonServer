@@ -35,7 +35,7 @@ router.post('/create-user', async (req, res) => {
 
 // Api to add Batallion 
 router.put('/add-batallion', authMiddleware,async (req, res) => {
-    const { battalionName } = req.body;
+    const { name } = req.body;
     const { _id } = req.user;
 
     try {
@@ -49,7 +49,7 @@ router.put('/add-batallion', authMiddleware,async (req, res) => {
         }
 
         // Create a new battalion
-        const newBattalion = new Batallion({ name: battalionName, admin: user._id });
+        const newBattalion = new Batallion({ name: name, admin: user._id });
         await newBattalion.save();
 
         // Push the battalion ID into the battalions array of the user
@@ -61,7 +61,7 @@ router.put('/add-batallion', authMiddleware,async (req, res) => {
         res.status(200).json({ success: true, message: 'Battalion added successfully', user });
     } catch (error) {
         console.error('Error adding battalion:', error);
-        res.status(500).json({ success: false, error: 'Internal server error' });
+        res.status(500).json({ success: false, error: error.message});
     }
 });
 
@@ -175,4 +175,27 @@ router.put('/update-reinforcement/:crateId', authMiddleware, async (req, res) =>
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
+
+// Api to get Batallion details;
+router.get('/get-batallions',authMiddleware , async(req,res)=>{
+    try {
+        const userId = req.user.id;
+
+        // Fetch the user document from the database
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Extract battalion IDs from the user's battalions array
+        const battalionIds = user.batallions;
+        const battalions = await Batallion.find({ _id: { $in: battalionIds } });
+
+        res.status(200).json({ battalions });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+})
 module.exports = router
