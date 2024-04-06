@@ -91,7 +91,7 @@ router.put('/add-crate/:batallionId' , authMiddleware ,async(req,res)=>{
 
 // Api to get the data 
 router.get('/get-data',authMiddleware , async(req,res)=>{
-    return res.status(200).json({success: success , user: req.user})
+    return res.status(200).json({success: true , user: req.user})
 })
 // Api to login 
 router.post('/login', async (req, res) => {
@@ -121,6 +121,57 @@ router.post('/login', async (req, res) => {
         res.status(200).json({ success: true, message: 'Login successful', token });
     } catch (error) {
         console.error('Error during login:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+// Api to change the status;
+router.put('/update-status/:crateId', authMiddleware, async (req, res) => {
+    try {
+        const { crateId } = req.params;
+        
+        // Find the crate by ID
+        const crate = await Crate.findById(crateId);
+        
+        // Check if the crate exists
+        if (!crate) {
+            return res.status(404).json({ success: false, message: 'Crate not found' });
+        }
+
+        // Update the crate status to 'active'
+        crate.status = 'active';
+        
+        // Save the updated crate to the database
+        await crate.save();
+
+        res.status(200).json({ success: true, message: 'Crate status updated successfully', crate });
+    } catch (error) {
+        console.error('Error updating crate status:', error);
+        res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+});
+
+// Api to chagne the reinforcement
+router.put('/update-reinforcement/:crateId', authMiddleware, async (req, res) => {
+    try {
+        const { crateId } = req.params;
+        
+        // Find the crate by ID
+        const crate = await Crate.findById(crateId);
+        
+        // Check if the crate exists
+        if (!crate) {
+            return res.status(404).json({ success: false, message: 'Crate not found' });
+        }
+
+        // Update the crate status to 'active'
+        crate.reinforcement = true;
+        
+        // Save the updated crate to the database
+        await crate.save();
+
+        res.status(200).json({ success: true, message: 'Crate reinforcement updated successfully', crate });
+    } catch (error) {
+        console.error('Error updating crate status:', error);
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 });
