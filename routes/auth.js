@@ -204,4 +204,35 @@ router.get('/get-batallions',authMiddleware , async(req,res)=>{
         res.status(500).json({ message: 'Server Error' });
     }
 })
+router.put('/update-crate/:crateId', async (req, res) => {
+    const { weight } = req.body;
+    const crateId = req.params.crateId;
+
+    try {
+        const crate = await Crate.findById(crateId);
+        if (!crate) {
+            return res.status(404).json({ success: false, message: "Crate not found" });
+        }
+
+        // Update the crate based on weight
+        if (weight < 25) {
+            crate.reinforcement = true;
+            crate.weight = weight
+            await crate.save();
+            return res.status(200).json({ success: true, message: "Crate updated successfully" });
+        } else if (weight < 100) {
+            crate.status = 'active';
+            crate.weight = weight
+            await crate.save();
+            return res.status(200).json({ success: true, message: "Crate updated successfully" });
+        }
+
+        // Save the updated crate
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+});
+
 module.exports = router
