@@ -66,28 +66,34 @@ router.put('/add-batallion', authMiddleware,async (req, res) => {
 });
 
 // Api to add new crate and assign it to a battalion
-router.put('/add-crate/:batallionId' , authMiddleware ,async(req,res)=>{
-    const {type , name, weight} = req.body
-    const batallionId = req.params.batallionId
-    const {_id} = req.user;
+router.put('/add-crate/:batallionId', authMiddleware, async (req, res) => {
+    const { type, name, weight } = req.body;
+    const batallionId = req.params.batallionId;
+    const userId = req.user._id; // Assuming req.user holds the logged-in user's document
+
     try {
-        const batallion = await Batallion.findById(batallionId)
-        if(!batallion) {
-            return res.status(400).json({success: false, message: "failed to find the batallion"})
+        // Check if the battalion exists
+        const batallion = await Batallion.findById(batallionId);
+        if (!batallion) {
+            return res.status(400).json({ success: false, message: "Failed to find the battalion" });
         }
-        const newCrate = new Crate({name: name,access: _id ,type: type , weight: weight , battalion: batallion.id })
+
+        // Create a new crate
+        const newCrate = new Crate({ name, type, weight, battalion: batallionId , access: userId});
         await newCrate.save();
-        const user = await User.findById(_id);
-        user.crates.push(newCrate._id)
-       
-        batallion.crate.push(newCrate._id);
-        return res.status(200).json({success: true, message: "Crate Added"})
-        
+
+        // Update user's crates
+        await User.findByIdAndUpdate(userId, { $push: { crates: newCrate._id } });
+
+        // Update battalion's crates
+        await Batallion.findByIdAndUpdate(batallionId, { $push: { crate: newCrate._id } });
+
+        return res.status(200).json({ success: true, message: "Crate added successfully" });
     } catch (error) {
-        return res.status(500).send("Internal Server Error")
-        
+        console.error(error);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-})
+});
 
 // Api to get the data 
 router.get('/get-data',authMiddleware , async(req,res)=>{
